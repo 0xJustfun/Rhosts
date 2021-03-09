@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=1.0">
     <title>认真加速</title>
     <style>
         body {
@@ -37,6 +36,22 @@
             margin-top: 60px;
         }
 
+        .success {
+            color: #28D458
+        }
+
+        .wait {
+            color: #D4A728
+        }
+
+        .busy {
+            color: #E41C1C;
+        }
+
+        .fail {
+            color: #A0A0A0;
+        }
+
         .card {
             background: #F2F2F2;
             border-radius: 8px;
@@ -47,7 +62,7 @@
             letter-spacing: 2.4px;
             text-align: center;
             position: relative;
-            
+
         }
 
         .fixed {
@@ -61,6 +76,7 @@
             justify-content: center;
             align-items: center;
         }
+
         .tag {
             background: #35FF00;
             border-radius: 8px;
@@ -70,18 +86,15 @@
             color: #FFFFFF;
             letter-spacing: 0.8px;
         }
-        .tag.recommend{
-            display: inline-block;   
+
+        .tag.show {
+            display: inline-block;
         }
 
         .ms {
             font-family: PingFangSC-Regular;
             font-size: 12px;
-            color: rgba(40, 212, 88, 0.73);
             letter-spacing: 0.8px;
-        }
-        .ms.ms9999{
-            color: red
         }
 
         a {
@@ -133,11 +146,19 @@
             var html = ""
             for (let i = 0; i < list.length; i += 1) {
                 const item = list[i];
+                var status = "fail"
+                if (item.ms < 600) {
+                    status = "success"
+                } else if (item.ms < 2000) {
+                    status = "wait"
+                } else if (item.ms < 9999) {
+                    status = "busy"
+                }
                 html += `<a href="${item.host+redirect}"> 
                         <div class="card">${new URL(item.host).host}
                         <div class="fixed">
-                            <div class="tag ${item.recommend}">推荐</div>
-                            <span class="ms ms${item.ms}">${item.ms}</span>
+                            <div class="tag ${status==="success"?"show":""}">推荐</div>
+                            <span class="ms ${status}">${item.ms}</span>
                         </div>
                         </div>
                     </a>`
@@ -146,17 +167,18 @@
         }
         var pingItem = function (item) {
             var time = Date.now()
-            fetch(item.host+"/api/ping").then(function (res) {
+            fetch(item.host + "/api/ping").then(function (res) {
                 return res.text()
             }).then(function (text) {
-                if (text==='pong') {
+                if (text === 'pong') {
                     item.ms = Date.now() - time
                     updateUI()
-                }else{
+                } else {
                     item.ms = 9999
                     updateUI()
                 }
             }).catch(function (params) {
+                item.ms = 9999
                 item.ms = 9999
                 updateUI()
             })
@@ -168,24 +190,27 @@
             }
         }
         var getRhost = function () {
-            fetch("https://gist.githubusercontent.com/0xJustfun/4150385403268ab36a4c4ccbf681f8f4/raw/Rhosts").then(function (res) {
-                return res.text()
-            }).then(function (text) {
+            fetch("https://gist.githubusercontent.com/0xJustfun/4150385403268ab36a4c4ccbf681f8f4/raw/Rhosts").then(
+                function (res) {
+                    return res.text()
+                }).then(function (text) {
                 list = text.split("\n").map(function (host) {
                     return host.trim()
                 }).filter(function (host) {
                     return !!host
                 }).map(function (host) {
-                    return { host, ms: "" }
+                    return {
+                        host,
+                        ms: ""
+                    }
                 })
                 checkPing()
                 updateUI()
             })
-            
+
         }
 
         getRhost()
-        
     </script>
 </body>
 
