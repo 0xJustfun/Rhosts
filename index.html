@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=1.0">
+    <title>认证加速</title>
+    <style>
+        body {
+            text-align: center;
+        }
+
+        .title {
+            font-family: PingFangSC-Regular;
+            font-size: 24px;
+            color: #4F4F4F;
+            letter-spacing: 3.27px;
+        }
+
+        .tip {
+            font-family: PingFangSC-Regular;
+            font-size: 16px;
+            color: rgba(79, 79, 79, 0.73);
+            letter-spacing: 2.18px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .name {
+            text-align: left;
+            margin: 24px;
+        }
+
+        .desc {
+            margin-top: 60px;
+        }
+
+        .card {
+            background: #F2F2F2;
+            border-radius: 8px;
+            padding: 24px;
+            font-family: PingFangSC-Semibold;
+            font-size: 36px;
+            color: rgba(79, 79, 79, 0.73);
+            letter-spacing: 2.4px;
+            text-align: center;
+            position: relative;
+            
+        }
+
+        .fixed {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-family: PingFangSC-Semibold;
+            font-size: 12px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .tag {
+            background: #35FF00;
+            border-radius: 8px;
+            padding: 4px 8px;
+            margin-right: 20px;
+            display: none;
+            color: #FFFFFF;
+            letter-spacing: 0.8px;
+        }
+        .tag.recommend{
+            display: inline-block;   
+        }
+
+        .ms {
+            font-family: PingFangSC-Regular;
+            font-size: 12px;
+            color: rgba(40, 212, 88, 0.73);
+            letter-spacing: 0.8px;
+        }
+        .ms.ms9999{
+            color: red
+        }
+
+        a {
+            margin: 20px;
+        }
+
+        a:link {
+            color: transparent;
+            text-decoration: none;
+        }
+
+        a:active {
+            color: transparent;
+        }
+
+        a:visited {
+            color: transparent;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: transparent;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <p class="name title">认真加速™</p>
+    <p class="desc title">请选择您所在地区的<br>最佳线路入口</p>
+    <p class="tip">若无可用请在稍后再刷新本页面</p>
+    <div id="list">
+
+    </div>
+
+    <script>
+        var list = []
+        var updateUI = function (params) {
+            var html = ""
+            for (let i = 0; i < list.length; i += 1) {
+                const item = list[i];
+                html += `<a href="${item.host}"> 
+                        <div class="card">${new URL(item.host).host}
+                        <div class="fixed">
+                            <div class="tag ${item.recommend}">推荐</div>
+                            <span class="ms ms${item.ms}">${item.ms}</span>
+                        </div>
+                        </div>
+                    </a>`
+            }
+            document.querySelector("#list").innerHTML = html
+        }
+        var pingItem = function (item) {
+            var time = Date.now()
+            fetch(item.host+"/api/ping").then(function (res) {
+                return res.text()
+            }).then(function (text) {
+                if (text==='pong') {
+                    item.ms = Date.now() - time
+                    updateUI()
+                }else{
+                    item.ms = 9999
+                    updateUI()
+                }
+            }).catch(function (params) {
+                item.ms = 9999
+                updateUI()
+            })
+        }
+        var checkPing = function () {
+            for (let i = 0; i < list.length; i++) {
+                const item = list[i];
+                pingItem(item)
+            }
+        }
+        var getRhost = function () {
+            fetch("https://gist.githubusercontent.com/0xJustfun/4150385403268ab36a4c4ccbf681f8f4/raw/Rhosts").then(function (res) {
+                return res.text()
+            }).then(function (text) {
+                list = text.split("\n").map(function (host) {
+                    return host.trim()
+                }).filter(function (host) {
+                    return !!host
+                }).map(function (host) {
+                    return { host, ms: "" }
+                })
+                checkPing()
+                updateUI()
+            })
+            
+        }
+
+        getRhost()
+        
+    </script>
+</body>
+
+</html>
