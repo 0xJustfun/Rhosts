@@ -147,11 +147,12 @@
             for (let i = 0; i < list.length; i += 1) {
                 const item = list[i];
                 var status = "fail"
-                if (item.ms < 600) {
+                if (item.ms && item.ms < 600) {
+                    console.log(item.ms)
                     status = "success"
-                } else if (item.ms < 2000) {
+                } else if (item.ms && item.ms < 2000) {
                     status = "wait"
-                } else if (item.ms < 9999) {
+                } else if (item.ms && item.ms < 9999) {
                     status = "busy"
                 }
                 html += `<a href="${item.host+redirect}"> 
@@ -178,7 +179,6 @@
                     updateUI()
                 }
             }).catch(function (params) {
-                item.ms = 9999
                 item.ms = 9999
                 updateUI()
             })
